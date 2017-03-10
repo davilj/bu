@@ -26,6 +26,12 @@ public class BlockController : MonoBehaviour {
 		Debug.Log("active:  " + Active);
 	}
 
+	public void MoveBlock(float newX, float newY, float newZ) {
+		Debug.Log("Moving block in block controller (" + newX + ", " + newY + ")");
+		target = new Vector3(newX, newY, newZ); 
+		stepping=true;
+	}
+
 	// Update is called once per frame
 	void Update () {
 		
@@ -35,26 +41,6 @@ public class BlockController : MonoBehaviour {
 			Renderer rend = GetComponent<Renderer>();
 			rend.material.shader = Shader.Find("Specular");
 			rend.material.SetColor("_SpecColor", Color.red);
-
-			if (calcEnd) {
-				Vector3 target = transform.position;
-				Debug.Log("currentPos: " + target);
-				calcEnd=false;
-			}
-
-			if (!stepping) {
-				if (Input.GetKey("i")) {
-					target = new Vector3(transform.position.x, transform.position.y, transform.position.z + stepSize); 
-					stepping = true;
-					Debug.Log("Target,i: " + target);
-				}
-
-				if (Input.GetKey("k")) {
-					target = new Vector3(transform.position.x, transform.position.y, transform.position.z - stepSize);
-					stepping = true;
-					Debug.Log("Target,k: " + target);
-				}
-			}
 
 			if (stepping) {
 				float step = k * Time.deltaTime;

@@ -6,40 +6,40 @@ public class MainGameScript : MonoBehaviour {
 
 	public GameObject pBlockPrefab;
 
-	BlockController activeTile;
-	int activeTileIndex=0;
 	int delayCount=0;
 	public int Delay;
 	Board board;
 
-	List<BlockController> tiles = new List<BlockController>();
-
 	// Use this for initialization
 	void Start () {
-		board = new Board(3,3, pBlockPrefab, transform);
+		board = new Board(2,2, pBlockPrefab, transform);
 		Debug.Log("Starting a Main Game Script");
 
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		int index=activeTileIndex;
+		
 		if (delayCount==0) {
 			if (Input.GetKey("z")) {
 				board.moveActiveBlockRight();
-			};
+			}
 
 			if (Input.GetKey("x")) {
 				board.moveActiveBlockLeft();
-			};
+			}
 
 			if (Input.GetKey("v")) {
 				board.moveActiveBlockDown();
-			};
+			}
 
 			if (Input.GetKey("c")) {
 				board.moveActiveBlockUp();
-			};
+			}
+
+			if (Input.GetKey("s")) {
+				board.swapActiveBlockWithSpace();
+			}
 			delayCount=1;
 		} else {
 			delayCount=delayCount + 1;
@@ -48,48 +48,106 @@ public class MainGameScript : MonoBehaviour {
 			}
 		}
 	}
-
-
-
+		
 	class Board {
 		BlockController activeTile;
 		int XIndexOfActiveBlock=0;
-		int YIndexOfActiveBlock=0;
+		int ZIndexOfActiveBlock=0;
 		BlockController[,]tiles;
 
 		int numberOfXBlocks;
-		int numberOfYBlocks;
+		int numberOfZBlocks;
 
-		public Board(int numberX, int numberY, GameObject preFab, Transform transform) {
+		public Board(int numberX, int numberZ, GameObject preFab, Transform transform) {
 			numberOfXBlocks = numberX;
-			numberOfYBlocks = numberY;
-			tiles = new BlockController[numberOfXBlocks, numberOfYBlocks];
+			numberOfZBlocks = numberZ;
+			tiles = new BlockController[numberOfXBlocks, numberOfZBlocks];
 			for (int indexX=0; indexX < numberOfXBlocks; indexX++) {
-				for (int indexY=0; indexY < numberOfYBlocks; indexY++) {
-					if (!(indexY == numberOfYBlocks-1 && indexX == numberOfXBlocks -1 )) {
-						createBlock(indexX, indexY, preFab, transform);
+				for (int indexZ=0; indexZ < numberOfZBlocks; indexZ++) {
+					if (!(indexZ == numberOfZBlocks-1 && indexX == numberOfXBlocks -1 )) {
+						createBlock(indexX, indexZ, preFab, transform);
 					}
 				}
 			}
 			Debug.Log("ActiveTime: " + activeTile );
 		}
 
+		private void moveBlockInZ(int newZ) {
+			float newZCoord = calcCoordFromIndex(newZ);
+			float XCoord = calcCoordFromIndex(XIndexOfActiveBlock);
+			activeTile.MoveBlock( XCoord, 0, newZCoord);
+			tiles[XIndexOfActiveBlock, newZ]=activeTile;
+			tiles[XIndexOfActiveBlock, ZIndexOfActiveBlock]=null;
+			ZIndexOfActiveBlock=newZ;
+		}
+
+		private void moveBlockInX(int newX) {
+			float newXCoord = calcCoordFromIndex(newX);
+			float ZCoord = calcCoordFromIndex(ZIndexOfActiveBlock);
+			activeTile.MoveBlock( newXCoord, 0, ZCoord);
+			tiles[newX, ZIndexOfActiveBlock]=activeTile;
+			tiles[XIndexOfActiveBlock, ZIndexOfActiveBlock]=null;
+			XIndexOfActiveBlock=newX;
+		}
+
+		public void swapActiveBlockWithSpace() {
+			int newZ = inc(ZIndexOfActiveBlock, numberOfZBlocks);
+			if (canSwap(XIndexOfActiveBlock, newZ)) {
+				Debug.Log("Swap with Y, up");
+				moveBlockInZ(newZ);
+				return;
+			}
+
+			newZ = dec(ZIndexOfActiveBlock, numberOfZBlocks);
+			if (canSwap(XIndexOfActiveBlock, newZ)) {
+				Debug.Log("Swap with Y, down");
+				moveBlockInZ(newZ);
+				return;
+			}
+
+			int newX = inc(XIndexOfActiveBlock, numberOfXBlocks);
+			if (canSwap(newX, ZIndexOfActiveBlock)) {
+				Debug.Log("Swap with X, right");
+				moveBlockInX(newX);
+				return;
+			}
+
+			newX = dec(XIndexOfActiveBlock, numberOfXBlocks);
+			if (canSwap(newX, ZIndexOfActiveBlock)) {
+				Debug.Log("Swap with X, left");
+				moveBlockInX(newX);
+				return;
+			}
+			Debug.Log("NO SWAP!!");	
+			
+		}
+
+		private float calcCoordFromIndex(int index) {
+			return index * 12.0F;
+		}
+
+		public bool canSwap(int x, int z) {
+			Debug.Log(tiles);
+			//validMove tells you can't select an empty space, but you can move into an empty space
+			return !validMove(x,z);
+		}
+
 		public void moveActiveBlockRight() {
 			int newX = dec(XIndexOfActiveBlock, numberOfXBlocks);
-			if (validMove(newX, YIndexOfActiveBlock)) {
-				updateActiveBlock(newX, YIndexOfActiveBlock);
+			if (validMove(newX, ZIndexOfActiveBlock)) {
+				updateActiveBlock(newX, ZIndexOfActiveBlock);
 			}
 		}
 
 		public void moveActiveBlockUp() {
-			int newY = inc(YIndexOfActiveBlock, numberOfYBlocks);
+			int newY = inc(ZIndexOfActiveBlock, numberOfZBlocks);
 			if (validMove(XIndexOfActiveBlock, newY)) {
 				updateActiveBlock(XIndexOfActiveBlock, newY);
 			}
 		}
 
 		public void moveActiveBlockDown() {
-			int newY=dec(YIndexOfActiveBlock, numberOfYBlocks);
+			int newY=dec(ZIndexOfActiveBlock, numberOfZBlocks);
 			if (validMove(XIndexOfActiveBlock, newY)) {
 				updateActiveBlock(XIndexOfActiveBlock, newY);
 			}
@@ -97,8 +155,8 @@ public class MainGameScript : MonoBehaviour {
 
 		public void moveActiveBlockLeft() {
 			int newX = inc(XIndexOfActiveBlock, numberOfXBlocks);
-			if (validMove(newX, YIndexOfActiveBlock)) {
-				updateActiveBlock(newX, YIndexOfActiveBlock);
+			if (validMove(newX, ZIndexOfActiveBlock)) {
+				updateActiveBlock(newX, ZIndexOfActiveBlock);
 			}
 		}
 
@@ -106,14 +164,14 @@ public class MainGameScript : MonoBehaviour {
 			Debug.Log("nX: " + newX );
 			Debug.Log("nY: " + newY );
 			Debug.Log("X: " + XIndexOfActiveBlock );
-			Debug.Log("Y: " + YIndexOfActiveBlock );
+			Debug.Log("Y: " + ZIndexOfActiveBlock );
 			activeTile.Active=false;
 			XIndexOfActiveBlock=newX;
-			YIndexOfActiveBlock=newY;
-			activeTile = tiles[XIndexOfActiveBlock, YIndexOfActiveBlock];
+			ZIndexOfActiveBlock=newY;
+			activeTile = tiles[XIndexOfActiveBlock, ZIndexOfActiveBlock];
 			activeTile.Active=true;
 			Debug.Log("X: " + XIndexOfActiveBlock );
-			Debug.Log("Y: " + YIndexOfActiveBlock );
+			Debug.Log("Y: " + ZIndexOfActiveBlock );
 		}
 
 		private bool validMove(int X, int Y) {
@@ -124,7 +182,7 @@ public class MainGameScript : MonoBehaviour {
 		private int inc(int index, int numberOfBlocks) {
 			int tmp = index + 1;
 			if (tmp > (numberOfBlocks-1)) {
-				tmp=0;
+				tmp=index;
 			}
 			return tmp;
 		}
@@ -132,21 +190,21 @@ public class MainGameScript : MonoBehaviour {
 		private int dec(int index, int numberOfBlocks) {
 			int tmp = index - 1;
 			if (tmp < 0) {
-				tmp=numberOfBlocks-1;
+				tmp=index;
 			}
 			return tmp;
 		}
 
-		private void createBlock(int x, int y, GameObject preFab, Transform transform ) {
-			Vector3 location = new Vector3(x * 12.0F, 0.0F, y * 12.0F);
+		private void createBlock(int x, int z, GameObject preFab, Transform transform ) {
+			Vector3 location = new Vector3(calcCoordFromIndex(x), 0.0F, calcCoordFromIndex(z));
 
 			GameObject block = (GameObject)Instantiate(preFab, location, transform.rotation);
 			BlockController blockController = (BlockController) block.GetComponent(typeof(BlockController));
-			if (x==0 && y==0) {
+			if (x==0 && z==0) {
 				activeTile = blockController;
 				activeTile.Active=true;
 			}
-			tiles[x,y]=blockController;
+			tiles[x,z]=blockController;
 		}
 	}
 }
