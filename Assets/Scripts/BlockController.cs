@@ -17,13 +17,13 @@ public class BlockController : MonoBehaviour {
 	void Start () {
 		//active=false;
 		stepSize = GetComponent<Renderer>().bounds.size.z;
-		Debug.Log("Start->stepsize: " + stepSize);
+		//Debug.Log("Start->stepsize: " + stepSize);
 		//int id = Random.Range(0,1000);
 
 		aName = " -[ " + DateTime.Now.Millisecond +" ]";
-		Debug.Log("Name:  " + aName);
-		Debug.Log("Name:  " + name);
-		Debug.Log("active:  " + Active);
+		//Debug.Log("Name:  " + aName);
+		//Debug.Log("Name:  " + name);
+		//Debug.Log("active:  " + Active);
 	}
 
 	public void MoveBlock(float newX, float newY, float newZ) {
@@ -32,10 +32,63 @@ public class BlockController : MonoBehaviour {
 		stepping=true;
 	}
 
+	public void removeNorth() {
+		Debug.Log("remvoe a bridge: North");
+		deactivateBridge("BridgeNorth");
+	}
+
+	public void addNorth() {
+		Debug.Log("add a bridge: North");
+		activateBridge("BridgeNorth");
+	}
+
+	public void removeSouth() {
+		Debug.Log("remvoe a bridge: South");
+		deactivateBridge("BridgeSouth");
+	}
+
+	public void addSouth() {
+		Debug.Log("add a bridge: south");
+		activateBridge("BridgeSouth");
+	}
+
+	public void removeWest() {
+		Debug.Log("remvoe a bridge: west");
+		deactivateBridge("BridgeWest");
+	}
+
+	public void addWest() {
+		Debug.Log("adding a bridge: West");
+		activateBridge("BridgeWest");
+	}
+
+	public void removeEast() {
+		Debug.Log("remvoe a bridge: east");
+		deactivateBridge("BridgeEast");
+	}
+
+	public void addEast() {
+		Debug.Log("adding a bridge: East");
+		activateBridge("BridgeEast");
+	}
+
+	public void removeAll() {
+		removeNorth();
+		removeSouth();
+		removeWest();
+		removeEast();
+	}
+
+	private void activateBridge(string bridgeName) {
+		transform.FindChild(bridgeName).gameObject.SetActive(true);
+	}
+
+	private void deactivateBridge(string bridgeName) {
+		transform.FindChild(bridgeName).gameObject.SetActive(false);
+	}
+
 	// Update is called once per frame
 	void Update () {
-		
-
 		if (Active) {
 			
 			Renderer rend = GetComponent<Renderer>();

@@ -1,10 +1,12 @@
 fileFormatVersion: 2
 guid: 43fdee211a3a65c4e9d5a0f69d5f417d
-timeCreated: 1486805425
+timeCreated: 1489876772
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - pBlockPrefab: {fileID: 1594951341595302, guid: a4b520018d09aeb46b4b14e21649bc23,
+      type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
